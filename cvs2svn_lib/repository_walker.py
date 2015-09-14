@@ -35,6 +35,80 @@ class _RepositoryWalker(object):
   def __init__(self, file_key_generator, error_handler):
     self.file_key_generator = file_key_generator
     self.error_handler = error_handler
+    self.skip_fileextensions = self._build_fileextension_to_skip()
+
+  def _build_fileextension_to_skip(self):
+    extensions = [] # could be read from a file
+    extensions.append('.BMP')
+    extensions.append('.EXE')
+    extensions.append('.GIF')
+    extensions.append('.JPG')
+    extensions.append('.PNG')
+    extensions.append('.PROJ')
+    extensions.append('.ZIP')
+    extensions.append('.VSD')
+    extensions.append('.a')
+    extensions.append('.acd')
+    extensions.append('.au')
+    extensions.append('.bmp')
+    extensions.append('.class')
+    extensions.append('.cld')
+    extensions.append('.cls')
+    extensions.append('.db')
+    extensions.append('.deleteme')
+    extensions.append('.dll')
+    extensions.append('.doc')
+    extensions.append('.docx')
+    extensions.append('.eclipseproduct')
+    extensions.append('.exe')
+    extensions.append('.gif')
+    extensions.append('.gz')
+    extensions.append('.ico')
+    extensions.append('.jnilib')
+    extensions.append('.jnlp')
+    extensions.append('.javaold')
+    extensions.append('.java_')
+    extensions.append('.javaTEST')
+    extensions.append('.javaSAVE')
+    extensions.append('.javaCOMPILE')
+    extensions.append('.jar')
+    extensions.append('.jars')
+    extensions.append('.jpg')
+    extensions.append('.jsa')
+    extensions.append('.la')
+    extensions.append('.ldif')
+    extensions.append('.log')
+    extensions.append('.mp3')
+    extensions.append('.msi')
+    extensions.append('.otf')
+    extensions.append('.png')
+    extensions.append('.ppt')
+    extensions.append('.pptx')
+    extensions.append('.proj')
+    extensions.append('.pspimage')
+    extensions.append('.res')
+    extensions.append('.rpt')
+    extensions.append('.sdk')
+    extensions.append('.ser')
+    extensions.append('.serobj')
+    extensions.append('.so')
+    extensions.append('.svg')
+    extensions.append('.swf')
+    extensions.append('.tar')
+    extensions.append('.tgz')
+    extensions.append('.tiff')
+    extensions.append('.tsr')
+    extensions.append('.ucd')
+    extensions.append('.usd')
+    extensions.append('.vsd')
+    extensions.append('.vjp')
+    extensions.append('.vcproj')
+    extensions.append('.war')
+    extensions.append('.xls')
+    extensions.append('.xlsx')
+    extensions.append('.zip')
+    extensions.append('.zipped')
+    return extensions
 
   def _get_cvs_file(
         self, parent_directory, basename,
@@ -134,6 +208,13 @@ class _RepositoryWalker(object):
           parent_directory, basename, file_in_attic=True, leave_in_attic=True,
           )
 
+  def isExcludedByFileExtension(self, fname):
+    for extension in self.skip_fileextensions:
+      cvsFileExtension = extension + ',v'
+      if fname.endswith(cvsFileExtension):
+        return True
+    return False
+
   def _generate_attic_cvs_files(self, cvs_directory, exclude_paths):
     """Generate CVSFiles for the files in Attic directory CVS_DIRECTORY.
 
@@ -164,6 +245,11 @@ class _RepositoryWalker(object):
           logger.warn(
               "Directory %s found within Attic; ignoring" % (pathname,)
               )
+      elif self.isExcludedByFileExtension(fname):
+        logger.normal(
+            "[Pattern] excluding file from conversion: %s" % (pathname,)
+            )
+        pass
       elif fname.endswith(',v'):
         cvs_file = self._get_attic_file(cvs_directory, fname)
         if cvs_file.parent_directory == cvs_directory:
@@ -215,6 +301,11 @@ class _RepositoryWalker(object):
       if path_in_repository in exclude_paths:
         logger.normal(
             "Excluding file from conversion: %s" % (path_in_repository,)
+            )
+        pass
+      elif self.isExcludedByFileExtension(fname):
+        logger.normal(
+            "[Pattern] excluding file from conversion: %s" % (path_in_repository,)
             )
         pass
       elif os.path.isdir(pathname):
